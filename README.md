@@ -1,14 +1,48 @@
-# Lost & Found � Project 1
+# Kafka Learning Lab
+
+A hands-on Kafka learning project built around a Spring Boot Lost & Found service. It combines an interactive browser guide with runnable examples, so you can explore Kafka concepts visually and then see them in a real broker and application.
+
+## Start here
+
+Open **[index.html](index.html)** in a browser. The guide introduces the project flow, explains the Kafka concepts, and includes interactive diagrams and examples.
+
+## What you'll learn
+
+- Produce and consume events, and inspect record keys, partitions, offsets, and retention.
+- Evolve Avro event schemas with Schema Registry.
+- Compare consumer groups, fan-out, partition assignment, and rebalancing.
+- Explore retries, dead-letter topics, reliable notification delivery, acknowledgements, and Kafka transactions.
+
+## Requirements
+
+- Java 21
+- Docker Desktop with Docker Compose
+- Internet access for the Maven Wrapper and dependency downloads
+
+The browser guide can be opened on its own. To run the service examples, start the dependencies and follow the project steps below.
+
+## Project files
+
+- `index.html` — interactive Kafka learning guide
+- `src/` — Spring Boot application, Avro schemas, and tests
+- `compose.yaml` — Kafka, Schema Registry, and PostgreSQL services
+- `postman/` — requests and local environment for the API examples
+- `docs/PROJECT-3.md` — Project 3 delivery and transaction exercises
+- `pom.xml` and `mvnw.cmd` — Java build configuration and Maven Wrapper
+
+## Projects
+
+## Project 1 — Lost-item events and Kafka offsets
 
 A small Spring Boot API publishes lost-item reports to Kafka. An audit listener logs each consumed record's key and broker metadata.
 
-## Prerequisites
+### Prerequisites
 
 - Java 21
 - Internet access for the Maven Wrapper and dependency downloads
 - Docker Desktop with Docker Compose
 
-## Run
+### Run
 
 Start the single-node KRaft broker and create the one-partition topic:
 
@@ -31,7 +65,7 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8080/lost-items -ContentTyp
 
 The API returns HTTP 202 after Kafka acknowledges the send. `eventId` is a unique application event identifier; `itemId` is the Kafka record key. The broker assigns a partition and an offset within that partition. With one partition, all records are stored there; a key is the partitioning input and becomes more useful when the topic has multiple partitions. Offsets identify log positions, not event IDs.
 
-## Inspect records and offsets
+### Inspect records and offsets
 
 ```powershell
 docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic lost-found.events
@@ -44,7 +78,7 @@ The Spring audit consumer also logs key, topic, partition, offset, Kafka timesta
 docker compose exec kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic lost-found.events --partition 0 --offset 0 --max-messages 1 --property print.key=true --property print.partition=true --property print.offset=true
 ```
 
-## Retention experiment
+### Retention experiment
 
 The topic starts with a seven-day time retention. Shorten it to five seconds, publish an item, then wait and inspect again:
 
@@ -60,7 +94,7 @@ docker compose exec kafka /opt/kafka/bin/kafka-configs.sh --bootstrap-server loc
 
 Stop the broker with `docker compose down`; add `-v` only when you intentionally want to delete the broker's stored data.
 
-## Maven Wrapper
+### Maven Wrapper
 
 Maven is pinned to 3.9.12 in this repository. On Windows, use the checked-in wrapper, which downloads and SHA-512 verifies Maven on first use; no global Maven installation is needed:
 
@@ -71,7 +105,7 @@ Maven is pinned to 3.9.12 in this repository. On Windows, use the checked-in wra
 Use `.\mvnw.cmd clean package` to build the jar. Java 21 and an internet connection for the first Maven/dependency downloads are still required.
 
 
-## Postman
+### Postman
 
 Import both files from `postman/` into Postman:
 
@@ -80,7 +114,7 @@ Import both files from `postman/` into Postman:
 
 Select the `Lost & Found - Local` environment, make sure `baseUrl` is `http://localhost:8080`, then send **Report a lost item**. The API requires `itemId` and `description`; it generates `eventId` and `timestamp` itself. Start Kafka and the Spring Boot app first.
 
-# Project 2 - Notifications and Event Schemas
+## Project 2 — Notifications and event schemas
 
 Project 2 extends the same topic with two event types and Avro schemas:
 
@@ -90,9 +124,9 @@ Project 2 extends the same topic with two event types and Avro schemas:
 
 All events use `itemId` as the Kafka key. Email and SMS listeners are separate readers in `email-group` and `sms-group`; each group gets its own copy of every event. These listeners log a simulated notification. They do not connect to a real email or SMS provider.
 
-The Project 1 topic may contain JSON-encoded history. Project 2 consumers use uto-offset-reset: latest, so newly created email and SMS groups begin with events published after they start and do not try to decode old JSON records as Avro. The existing audit group resumes from its committed position.
+The Project 1 topic may contain JSON-encoded history. Project 2 consumers use auto-offset-reset: latest, so newly created email and SMS groups begin with events published after they start and do not try to decode old JSON records as Avro. The existing audit group resumes from its committed position.
 
-## Start Kafka, Schema Registry, and the topic
+### Start Kafka, Schema Registry, and the topic
 
 The Compose file exposes Kafka to your computer at `localhost:9092` and to containers at `kafka:29092`. Schema Registry is available at `http://localhost:8081`.
 
@@ -115,7 +149,7 @@ Invoke-RestMethod http://localhost:8081/subjects
 
 Wait until Schema Registry answers before starting the application.
 
-## Build and run
+### Build and run
 
 ```powershell
 .\mvnw.cmd -DskipTests clean package
@@ -124,7 +158,7 @@ Wait until Schema Registry answers before starting the application.
 
 The default app starts the audit, email, and SMS consumers. Open a second terminal for API requests.
 
-## See fan-out and same-key ordering
+### See fan-out and same-key ordering
 
 Publish the V1 shape first, so Schema Registry sees the original schema before V2 adds the optional field:
 
@@ -155,7 +189,7 @@ Invoke-RestMethod http://localhost:8081/subjects/com.example.lostfound.avro.Item
 
 `reportedLocation` is an Avro union of `null` and `string` with `default: null`. That default lets a V2 reader handle V1 data where the field is absent. The V1 endpoint is a learning aid; keep it ahead of V2 when creating a fresh Registry subject under the default backward-compatibility policy.
 
-## Observe consumer group sharing and rebalancing
+### Observe consumer group sharing and rebalancing
 
 The first app process has one email consumer in `email-group`. Start a second PowerShell window in the project folder and run a second app instance with only the email listener enabled:
 
@@ -179,12 +213,12 @@ docker compose exec kafka /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-se
 
 Compare the groups: `email-group` shares partitions between its two members; `sms-group` is separate and still receives every event independently.
 
-## Postman
+### Postman
 
 Import `postman/Lost-Found-Project-2.postman_collection.json` and `postman/Lost-Found-Local.postman_environment.json`. Select the local environment. The collection lists the V1 request first, then V2 and ItemFound, to make the schema evolution sequence easy to follow.
 
 
 
-# Project 3 - Reliable Notification Delivery
+## Project 3 — Reliable notification delivery
 
 See [docs/PROJECT-3.md](docs/PROJECT-3.md) for the retry and DLT demo, idempotent PostgreSQL notification jobs, record versus manual acknowledgement, producer idempotence, and the separate Kafka transaction exercise.
