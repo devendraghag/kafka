@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "ItemReportedLost",
+  "namespace": "com.example.lostfound.avro",
+  "doc": "Version 2: reportedLocation is optional so new consumers can read version 1 events.",
+  "fields": [
+    { "name": "eventId", "type": "string" },
+    { "name": "itemId", "type": "string" },
+    { "name": "description", "type": "string" },
+    { "name": "timestamp", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "reportedLocation", "type": ["null", "string"], "default": null }
+  ]
+}

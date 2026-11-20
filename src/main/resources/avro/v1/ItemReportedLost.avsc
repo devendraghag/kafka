@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "ItemReportedLost",
+  "namespace": "com.example.lostfound.avro",
+  "doc": "Version 1: initial lost item event before reportedLocation was added.",
+  "fields": [
+    { "name": "eventId", "type": "string" },
+    { "name": "itemId", "type": "string" },
+    { "name": "description", "type": "string" },
+    { "name": "timestamp", "type": { "type": "long", "logicalType": "timestamp-millis" } }
+  ]
+}

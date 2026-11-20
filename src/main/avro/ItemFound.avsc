@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "ItemFound",
+  "namespace": "com.example.lostfound.avro",
+  "doc": "An event that reports the item was found.",
+  "fields": [
+    { "name": "eventId", "type": "string" },
+    { "name": "itemId", "type": "string" },
+    { "name": "foundLocation", "type": "string" },
+    { "name": "timestamp", "type": { "type": "long", "logicalType": "timestamp-millis" } }
+  ]
+}

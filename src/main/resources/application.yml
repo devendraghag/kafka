@@ -1,0 +1,53 @@
+server:
+  port: 8080
+app:
+  kafka:
+    topic: lost-found.events
+    email-dlt: email.notifications.DLT
+    transaction-output-topic: notification.transactional.audit
+    transaction-email-topic: notification.transactional.email
+  notifications:
+    email:
+      enabled: ${EMAIL_CONSUMER_ENABLED:true}
+      ack-mode: ${KAFKA_ACK_MODE:record}
+    sms:
+      enabled: ${SMS_CONSUMER_ENABLED:true}
+    audit:
+      enabled: ${AUDIT_CONSUMER_ENABLED:true}
+    transaction-demo:
+      enabled: ${KAFKA_TRANSACTION_DEMO_ENABLED:false}
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      properties:
+        acks: all
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        retries: 10
+        delivery.timeout.ms: 120000
+        schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+    consumer:
+      group-id: lost-found-audit-group
+      client-id: ${KAFKA_CLIENT_ID:lost-found-client}
+      auto-offset-reset: latest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      properties:
+        schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+        specific.avro.reader: true
+        isolation.level: read_committed
+    listener:
+      ack-mode: record
+  datasource:
+    url: ${JDBC_URL:jdbc:postgresql://localhost:5432/lost_found}
+    username: ${JDBC_USERNAME:lost_found}
+    password: ${JDBC_PASSWORD:lost_found}
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always

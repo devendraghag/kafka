@@ -1,0 +1,42 @@
+{
+    "info":  {
+                 "_postman_id":  "8c5ee821-748a-4f39-a6e6-38ea77c8be15",
+                 "name":  "Lost \u0026 Found - Project 1",
+                 "description":  "Requests for Project 1: Lost Item Reporter. The API accepts a lost-item report, creates eventId and timestamp on the server, publishes the event to Kafka using itemId as the record key, and returns HTTP 202 after Kafka acknowledges the send. Start Kafka and the Spring Boot app before sending the request.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "Report a lost item",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json",
+                                                        "type":  "text"
+                                                    },
+                                                    {
+                                                        "key":  "Accept",
+                                                        "value":  "application/json",
+                                                        "type":  "text"
+                                                    }
+                                                ],
+                                     "body":  {
+                                                  "mode":  "raw",
+                                                  "raw":  "{\n  \"itemId\": \"{{itemId}}\",\n  \"description\": \"{{description}}\"\n}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              }
+                                              },
+                                     "url":  "{{baseUrl}}/lost-items",
+                                     "description":  "Submit one lost-item report. Required request fields are itemId and description. The application trims both values, generates eventId and timestamp, then publishes the event. A successful request returns HTTP 202 and the event JSON."
+                                 },
+                     "response":  [
+
+                                  ]
+                 }
+             ]
+}

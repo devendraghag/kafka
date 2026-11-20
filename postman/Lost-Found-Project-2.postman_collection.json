@@ -1,0 +1,43 @@
+{
+  "info": {
+    "_postman_id": "f1cb4480-7c31-4942-8383-819ecb5e3811",
+    "name": "Lost & Found - Project 2 Notifications and Schemas",
+    "description": "Project 2 endpoints. Send the V1 request first to register the historical Avro schema, then send V2 with optional reportedLocation, then publish ItemFound with the same itemId to observe ordering and notification fan-out.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 - Publish ItemReportedLost V1 (schema evolution starting point)",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json","type":"text"}],
+        "body": {"mode":"raw","raw":"{\n  \"itemId\": \"{{itemId}}\",\n  \"description\": \"{{description}}\"\n}","options":{"raw":{"language":"json"}}},
+        "url": "{{baseUrl}}/lost-items/v1",
+        "description": "Publish the historical Avro V1 schema. Run this before V2 against a fresh Schema Registry subject."
+      },
+      "response": []
+    },
+    {
+      "name": "2 - Report a lost item (Avro V2)",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json","type":"text"}],
+        "body": {"mode":"raw","raw":"{\n  \"itemId\": \"{{itemId}}\",\n  \"description\": \"{{description}}\",\n  \"reportedLocation\": \"{{reportedLocation}}\"\n}","options":{"raw":{"language":"json"}}},
+        "url": "{{baseUrl}}/lost-items",
+        "description": "Publish the current ItemReportedLost Avro schema. reportedLocation is optional and defaults to null in the schema."
+      },
+      "response": []
+    },
+    {
+      "name": "3 - Report that the item was found",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json","type":"text"}],
+        "body": {"mode":"raw","raw":"{\n  \"itemId\": \"{{itemId}}\",\n  \"foundLocation\": \"{{foundLocation}}\"\n}","options":{"raw":{"language":"json"}}},
+        "url": "{{baseUrl}}/found-items",
+        "description": "Publish ItemFound using the same itemId key to observe same-partition order after ItemReportedLost."
+      },
+      "response": []
+    }
+  ]
+}
